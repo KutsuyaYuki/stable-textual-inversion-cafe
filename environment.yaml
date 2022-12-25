@@ -16,13 +16,15 @@ dependencies:
     - pudb==2019.2
     - imageio==2.9.0
     - imageio-ffmpeg==0.4.2
-    - pytorch-lightning==1.4.2
+    - pytorch-lightning==1.6.5
     - omegaconf==2.1.1
     - test-tube>=0.7.5
     - streamlit>=0.73.1
     - einops==0.3.0
     - torch-fidelity==0.3.0
     - transformers==4.19.2
+    - setuptools==59.5.0
+    - pillow==9.0.1
     - torchmetrics==0.6.0
     - kornia==0.6
     - gradio==3.1.6

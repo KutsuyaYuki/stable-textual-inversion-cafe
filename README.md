@@ -3,6 +3,7 @@ credits for the original script go to https://github.com/rinongal/textual_invers
 please read this tutorial to gain some knowledge on how it works https://www.reddit.com/r/StableDiffusion/comments/wvzr7s/tutorial_fine_tuning_stable_diffusion_using_only/
 
 ## changelog:
+- [x] updated pytorch lightning version to 1.6.5 to improve speed drastically
 - [x] added support for windows
 - [x] added support for img2img + textual inversion
 - [x] added colab notebook that works on free colab for training textual inversion 
@@ -12,36 +13,58 @@ please read this tutorial to gain some knowledge on how it works https://www.red
 - [X] fixed resuming training
 - [X] added squarize outpainting images
 
-start with installing stable diffusion dependencies
+start with cloning the repo
+
+```
+git clone https://github.com/KutsuyaYuki/stable-textual-inversion-cafe
+cd stable-textual-inversion-cafe
+```
+
+then create the environment
 
 ```
 conda env create -f environment.yaml
 conda activate ldm
 ```
 
-**you need to install a couple extra things on top of the ldm env for this to work**
-```
-pip install setuptools==59.5.0
-pip install pillow==9.0.1
-pip install torchmetrics==0.6.0
-pip install -e .
-```
-
-
 # training 
-**under 11/12gb vram gpu's training will not work *(for now atleast)* but you can use the colab notebook (you'll see it when u scroll down)**
+**under 11gb vram gpu's training will not work *(for now atleast)* but you can use the colab notebook (you'll see it when u scroll down)**
 
-**to pause training you can double click inside your command prompt**
+**To pause training on Windows you can double click inside your command prompt.**
+
+**To pause training on Linux you press: `ctrl+z`. To resume it you just type `fg` and press enter.**
+
+**For Windows**
+
+```
+python main.py ^
+ --base configs/stable-diffusion/v1-finetune.yaml ^
+ -t --no-test ^
+ --actual_resume "SD/checkpoint/model.ckpt" ^
+ --gpus 0,  ^
+ --data_root "input" ^
+ --init_word "izumi_konata" ^
+ -n "izumi_konata"
+```
+
+**For Linux**
 ```
 python main.py \
  --base configs/stable-diffusion/v1-finetune.yaml \
  -t --no-test \
- --actual_resume "SD/checkpoint/path" \
+ --actual_resume "SD/checkpoint/model.ckpt" \
  --gpus 0,  \
- --data_root "C:\path\to\images" \
- --init_word "keyword" \
- -n "projectname" \
+ --data_root "input" \
+ --init_word "izumi_konata" \
+ -n "izumi_konata"
 ```
+
+**In these commands, change the following variables:**
+* `--actual_resume "SD/checkpoint/path.ckpt"`: Replace the path here, the stuff within the `""`, with the path to the checkpoint you want to train against. For example wd1.4.ckpt.
+* `--data_root "input"`: Replace the path here with the path to the dataset you have prepared.
+* `--init_word "izumi_konata"`: Replace the word here with the word you want to call it with. So if you train on a character called izumi_konata, put in izumi_konata.
+* ` -n "izumi_konata"`: Replace the word here with a self chosen name, for example your character's name. This name will appear in the Logs folder and contain previews of your TI.
+
 #
 - if u get a out of memory error try ```--base configs/stable-diffusion/v1-finetune_lowmemory.yaml```
 - you can follow the progress of your training by looking at the images in this folder logs/datasetname model time projectname/images.
@@ -52,20 +75,47 @@ python main.py \
 - results of the resumed checkpoint will be saved in the original checkpoint path but will not export the test images due to there already being test images in there, if you want test images specify a new path with -p logs/newpath
 #
 #
-**resuming** (make sure your path is specified like this ```path/path/path``` and not like this ```path\path\path``` when resuming)
+**Resuming** (make sure your path is specified like this ```path/path/path``` and not like this ```path\path\path``` when resuming)
+
+**For Windows**
 ```
-!python "main.py" \
+python "main.py" ^
+ --base "configs/stable-diffusion/v1-finetune.yaml" ^
+ -t --no-test ^
+ --actual_resume "SD/checkpoint/model.ckpt" ^
+ --gpus 0, ^
+ --data_root "input" ^
+ --init_word "izumi_konata" ^
+ --project "logs/input2022-12-24T21-17-01_izumi_konata" ^
+ --embedding_manager_ckpt "logs/input2022-12-24T21-17-01_izumi_konata/checkpoints/embeddings.pt" ^
+ --resume_from_checkpoint "logs/input2022-12-24T21-17-01_izumi_konata/checkpoints/last.ckpt" ^
+ -n "izumi_konata"
+```
+
+**For Linux**
+```
+python "main.py" \
  --base "configs/stable-diffusion/v1-finetune.yaml" \
  -t --no-test \
- --actual_resume " models/ldm/stable-diffusion-v1/model.ckpt" \
- --gpus 0 \
- --data_root "C:/path/to/training/images" \
- --init_word "keyword u used when training" \
- --project "logs/training images2022-08-28T07-55-48_myProjectName" \
- --embedding_manager_ckpt ""logs/datasetname model time projectname/checkpoints/embeddings.pt" \
- --resume_from_checkpoint "logs/datasetname model time projectname/checkpoints/last.ckpt" \
- -n "myProjectName2"
+ --actual_resume "SD/checkpoint/model.ckpt" \
+ --gpus 0, \
+ --data_root "input" \
+ --init_word "izumi_konata" \
+ --project "logs/input2022-12-24T21-17-01_izumi_konata" \
+ --embedding_manager_ckpt "logs/input2022-12-24T21-17-01_izumi_konata/checkpoints/embeddings.pt" \
+ --resume_from_checkpoint "logs/input2022-12-24T21-17-01_izumi_konata/checkpoints/last.ckpt" \
+ -n "izumi_konata"
 ```
+
+**In these commands, change the following variables:**
+* `--actual_resume "SD/checkpoint/path.ckpt"`: Replace the path here, the stuff within the `""`, with the path to the checkpoint you want to train against. For example wd1.4.ckpt.
+* `--data_root "input"`: Replace the path here with the path to the dataset you have prepared.
+* `--init_word "izumi_konata"`: Replace the word here with the previous keyword you have choosen before.
+* `--project "logs/training images2022-08-28T07-55-48_myProjectName"`: Replace the path here with the path of your previous project. This is located in the logs folder in the root of this repo.
+* `--embedding_manager_ckpt "logs/datasetname model time projectname/checkpoints/embeddings.pt"`: Replace the path here with the path of your previous project including the checkpoints folder and the embeddings.pt file. **NOTE**: the embeddings.pt file, not embeddings_gs-500.pt.
+* ` --resume_from_checkpoint "logs/input2022-12-24T21-17-01_izumi_konata/checkpoints/last.ckpt"`: Replace the path here with the path of your previous project including the checkpoints folder and the last.ckpt file.
+* `-n "izumi_konata"`: Replace the word here with the previous project name. This name is in your log folder.
+
 #
 #
 **merge trained models together**
