@@ -27,7 +27,15 @@ conda env create -f environment.yaml
 conda activate cafe
 ```
 
-# training 
+# Training with GUI
+* To use the GUI, make sure the conda environment is activated.
+* Then run:
+```
+python gui.py
+```
+The output will show in the console you have run this file from.
+
+# Training with CLI
 **under 11gb vram gpu's training will not work *(for now atleast)* but you can use the colab notebook (you'll see it when u scroll down)**
 
 **To pause training on Windows you can double click inside your command prompt.**
