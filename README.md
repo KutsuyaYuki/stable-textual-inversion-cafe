@@ -24,7 +24,7 @@ then create the environment
 
 ```
 conda env create -f environment.yaml
-conda activate ldm
+conda activate cafe
 ```
 
 # training 
@@ -189,7 +189,7 @@ Our code builds on, and shares requirements with [Latent Diffusion Models (LDM)]
 
 ```
 conda env create -f environment.yaml
-conda activate ldm
+conda activate cafe
 ```
 
 You will also need the official LDM text-to-image checkpoint, available through the [LDM project page](https://github.com/CompVis/latent-diffusion). 

@@ -1,0 +1,164 @@
+model:
+  base_learning_rate: 5.0e-03
+  target: ldm.models.diffusion.ddpm.LatentDiffusion
+  params:
+    linear_start: 0.00085
+    linear_end: 0.0120
+    num_timesteps_cond: 1
+    log_every_t: 200
+    timesteps: 1000
+    first_stage_key: image
+    cond_stage_key: caption
+    image_size: 64
+    channels: 4
+    cond_stage_trainable: true   # Note: different from the one we trained before
+    conditioning_key: crossattn
+    monitor: val/loss_simple_ema
+    scale_factor: 0.18215
+    use_ema: False
+    embedding_reg_weight: 0.0
+
+    personalization_config:
+      target: ldm.modules.embedding_manager.EmbeddingManager
+      params:
+        placeholder_strings: ["*"]
+        initializer_words: ["character","masterpiece","best quality","ultra-detailed","hair","eyes","hair between eyes","1girl","face","thick eyebrows", "blue eyes", "red hair"]
+        per_image_tokens: false
+        num_vectors_per_token: 20
+        progressive_words: False
+
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        image_size: 32 # unused
+        in_channels: 4
+        out_channels: 4
+        model_channels: 320
+        attention_resolutions: [ 4, 2, 1 ]
+        num_res_blocks: 2
+        channel_mult: [ 1, 2, 4, 4 ]
+        num_heads: 8
+        use_spatial_transformer: True
+        transformer_depth: 1
+        context_dim: 768
+        use_checkpoint: True
+        legacy: False
+
+    first_stage_config:
+      target: ldm.models.autoencoder.AutoencoderKL
+      params:
+        embed_dim: 4
+        monitor: val/rec_loss
+        ddconfig:
+          double_z: true
+          z_channels: 4
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          - 4
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        lossconfig:
+          target: torch.nn.Identity
+
+    cond_stage_config:
+      target: ldm.modules.encoders.modules.FrozenCLIPEmbedder
+
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 1
+    num_workers: 8
+    wrap: false
+    train:
+      target: ldm.data.personalized.PersonalizedBase
+      params:
+        size: 512
+        set: train
+        per_image_tokens: false
+        repeats: 100
+        templates:
+          - 'a photo of a {}'
+          - 'a rendering of a {}'
+          - 'a cropped photo of the {}'
+          - 'the photo of a {}'
+          - 'a photo of a clean {}'
+          - 'a photo of a dirty {}'
+          - 'a dark photo of the {}'
+          - 'a photo of my {}'
+          - 'a photo of the cool {}'
+          - 'a close-up photo of a {}'
+          - 'a bright photo of the {}'
+          - 'a cropped photo of a {}'
+          - 'a photo of the {}'
+          - 'a good photo of the {}'
+          - 'a photo of one {}'
+          - 'a close-up photo of the {}'
+          - 'a rendition of the {}'
+          - 'a photo of the clean {}'
+          - 'a rendition of a {}'
+          - 'a photo of a nice {}'
+          - 'a good photo of a {}'
+          - 'a photo of the nice {}'
+          - 'a photo of the small {}'
+          - 'a photo of the weird {}'
+          - 'a photo of the large {}'
+          - 'a photo of a cool {}'
+          - 'a photo of a small {}'
+    validation:
+      target: ldm.data.personalized.PersonalizedBase
+      params:
+        size: 512
+        set: val
+        per_image_tokens: false
+        repeats: 10
+        templates:
+          - 'a photo of a {}'
+          - 'a rendering of a {}'
+          - 'a cropped photo of the {}'
+          - 'the photo of a {}'
+          - 'a photo of a clean {}'
+          - 'a photo of a dirty {}'
+          - 'a dark photo of the {}'
+          - 'a photo of my {}'
+          - 'a photo of the cool {}'
+          - 'a close-up photo of a {}'
+          - 'a bright photo of the {}'
+          - 'a cropped photo of a {}'
+          - 'a photo of the {}'
+          - 'a good photo of the {}'
+          - 'a photo of one {}'
+          - 'a close-up photo of the {}'
+          - 'a rendition of the {}'
+          - 'a photo of the clean {}'
+          - 'a rendition of a {}'
+          - 'a photo of a nice {}'
+          - 'a good photo of a {}'
+          - 'a photo of the nice {}'
+          - 'a photo of the small {}'
+          - 'a photo of the weird {}'
+          - 'a photo of the large {}'
+          - 'a photo of a cool {}'
+          - 'a photo of a small {}'
+
+lightning:
+  modelcheckpoint:
+    params:
+      every_n_train_steps: 200
+  callbacks:
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 200
+        max_images: 8
+        increase_log_steps: False
+
+  trainer:
+    benchmark: True
+    max_steps: 20000

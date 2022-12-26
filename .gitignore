@@ -3,3 +3,4 @@ logs
 __pycache__
 latent_diffusion.egg-info
 src/
+gui_config.json
